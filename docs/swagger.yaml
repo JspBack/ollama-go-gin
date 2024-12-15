@@ -1,0 +1,14 @@
+definitions:
+  schemas.ChatRequest:
+    properties:
+      message:
+        type: string
+      model:
+        type: string
+      stream:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths: {}
+swagger: "2.0"

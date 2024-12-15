@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: .
+      args:
+        - PORT=8000
+    ports:
+      - "8000:8000"
+    environment:
+      - GIN_MODE=release
+      - OLLAMA_SCHEME=http
+      - OLLAMA_URL=localhost:11434
+      - PORT=8000
+    depends_on:
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  ollama:
+    image: ollama/ollama:latest
+    entrypoint:
+      - ollama pull llama3.2
+      - ollama pull llama3.2-vision
+      - ollama serve
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=2
+      - OLLAMA_MODELS=/usr/share/ollama/.ollama/models
+    volumes:
+      - ollama_data:/usr/share/ollama/.ollama/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  ollama_data:
