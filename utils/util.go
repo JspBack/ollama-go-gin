@@ -18,10 +18,10 @@ func LoadEnv() error {
 	return godotenv.Load()
 }
 
-func DoRequest(client *http.Client, data schemas.AiRequest) (string, error) {
+func DoRequest(client *http.Client, data schemas.AiRequest) (*schemas.AiResponse, error) {
 	r, err := json.Marshal(data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	req := http.Request{
@@ -32,7 +32,7 @@ func DoRequest(client *http.Client, data schemas.AiRequest) (string, error) {
 
 	resp, err := client.Do(&req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -43,10 +43,15 @@ func DoRequest(client *http.Client, data schemas.AiRequest) (string, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return string(body), errors.New("bad status code: " + resp.Status)
+		return nil, errors.New("bad status code: " + resp.Status)
 	}
 
-	return string(body), nil
+	var ar schemas.AiResponse
+	if err = json.Unmarshal(body, &ar); err != nil {
+		return nil, err
+	}
+
+	return &ar, nil
 }
 
 func ValidateForms(c *gin.Context, forms ...string) error {

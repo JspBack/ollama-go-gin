@@ -3,6 +3,7 @@ package handler
 import (
 	"ai-thing/schemas"
 	"ai-thing/utils"
+	"encoding/base64"
 	"io"
 	"log/slog"
 	"net/http"
@@ -29,7 +30,7 @@ func NewHandler() *Handler {
 //	@Summary		Chat with AI
 //	@Description	Chat with AI
 //	@Tags			AI
-//	@Accept			json
+//	@Accept			multipart/form-data
 //	@Produce		json
 //	@Param			message	formData	string	true	"Message"
 //	@Param			model	formData	string	true	"Model"
@@ -61,7 +62,7 @@ func (h *Handler) Chat(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"response": resp})
+	c.JSON(http.StatusOK, gin.H{"response": resp.Message.Content})
 }
 
 // image func
@@ -69,7 +70,7 @@ func (h *Handler) Chat(c *gin.Context) {
 //	@Summary		Image with AI
 //	@Description	You have to send as multipart/form-data
 //	@Tags			AI
-//	@Accept			json
+//	@Accept			multipart/form-data
 //	@Produce		json
 //	@Param			message	formData	string	true	"Message"
 //	@Param			image	formData	file	true	"Image file"
@@ -107,6 +108,8 @@ func (h *Handler) Image(c *gin.Context) {
 		return
 	}
 
+	b64 := base64.StdEncoding.EncodeToString(imageBytes)
+
 	ur := schemas.AiRequest{
 		Model:  c.PostForm("model"),
 		Stream: c.PostForm("stream") == "true",
@@ -114,7 +117,7 @@ func (h *Handler) Image(c *gin.Context) {
 			{
 				Role:    "user",
 				Content: c.PostForm("message"),
-				Image:   imageBytes,
+				Image:   []string{b64},
 			},
 		},
 	}
@@ -126,7 +129,7 @@ func (h *Handler) Image(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"response": resp})
+	c.JSON(http.StatusOK, gin.H{"response": resp.Message.Content})
 }
 
 // health func

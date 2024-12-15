@@ -3,3 +3,4 @@ docs
 .env.example
 .gitignore
 .golangci.yml
+docker-compose.yml

@@ -1,4 +1,4 @@
-FROM go:1.23 AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
@@ -6,6 +6,8 @@ ENV CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64 \
     GOPROXY=https://proxy.golang.org,direct
+
+RUN apk add --no-cache make curl
 
 COPY . .
 RUN go mod tidy && \

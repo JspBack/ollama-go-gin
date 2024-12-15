@@ -1,7 +1,8 @@
 services:
   backend:
+    container_name: backend
     build:
-      context: .
+      dockerfile: Dockerfile
       args:
         - PORT=8000
     ports:
@@ -9,24 +10,22 @@ services:
     environment:
       - GIN_MODE=release
       - OLLAMA_SCHEME=http
-      - OLLAMA_URL=localhost:11434
+      - OLLAMA_URL=ollama:11434
       - PORT=8000
     depends_on:
       ollama:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
 
   ollama:
-    image: ollama/ollama:latest
-    entrypoint:
-      - ollama pull llama3.2
-      - ollama pull llama3.2-vision
-      - ollama serve
+    container_name: ollama
+    build:
+      context: ./ollama
     pull_policy: always
     restart: unless-stopped
     ports:
@@ -35,8 +34,12 @@ services:
       - OLLAMA_NUM_PARALLEL=4
       - OLLAMA_MAX_LOADED_MODELS=2
       - OLLAMA_MODELS=/usr/share/ollama/.ollama/models
-    volumes:
-      - ollama_data:/usr/share/ollama/.ollama/models
+    healthcheck:
+      test: "ollama --version && ollama ps || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     deploy:
       resources:
         reservations:
@@ -44,12 +47,8 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+    volumes:
+      - ollama-models:/usr/share/ollama/.ollama/models
 
 volumes:
-  ollama_data:
+  ollama-models:

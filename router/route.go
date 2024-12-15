@@ -14,11 +14,11 @@ func InitRouter(r *gin.Engine, h *handler.Handler) {
 	{
 		v1.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		v1.GET("/docs", func(c *gin.Context) {
-			c.Redirect(http.StatusMovedPermanently, "/api/v1/docs/index.html")
+			c.Redirect(http.StatusMovedPermanently, "/api/docs/index.html")
 		})
 
 		v1.POST("/chat", h.Chat)
 		v1.POST("/image", h.Image)
-		v1.POST("/health", h.Health)
+		v1.GET("/health", h.Health)
 	}
 }
