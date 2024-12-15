@@ -63,7 +63,7 @@ Ollama-Go is an AI-powered application that provides chat and image processing f
 - The Ollama service pulls the `llama3.2` and `llama3.2-vision` models on startup.
 - Ensure your system has appropriate resources allocated for Docker, especially if using GPU acceleration.
 - The `docker-compose.yml` is configured to use an NVIDIA GPU. Make sure your Docker setup supports GPU sharing.
-- If you want to add otehr models configure it in `ollama/ollama.sh`.
+- If you want to add other models configure it in `ollama/entrypoint.sh`.
 
 ## License
 
